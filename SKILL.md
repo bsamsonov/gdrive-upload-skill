@@ -15,13 +15,27 @@ Uploads any folder containing `.md` files to Google Drive in two formats:
 1. **Google Docs** (formatted) — headings, tables, code — via `pandoc` → `.docx` → Google Drive conversion
 2. **Original `.md` files** — stored in a `md_originals/` subfolder for reference
 
-## Script location
+## Installation
 
+Clone directly into your user skills directory:
+
+```bash
+git clone https://github.com/borissamsonov77/gdrive-upload-skill ~/.claude/skills/gdrive-upload
 ```
-~/google_uploads/
-├── upload_to_drive.sh      ← main script (pandoc + rclone, high-quality conversion)
-├── pandoc_reference.docx   ← document style template (used automatically)
-└── no_bookmarks.lua        ← pandoc lua filter (used automatically)
+
+After cloning, the layout will be:
+```
+~/.claude/skills/gdrive-upload/
+├── SKILL.md
+└── scripts/
+    ├── upload_to_drive.sh      ← main script
+    ├── pandoc_reference.docx   ← document style template
+    └── no_bookmarks.lua        ← pandoc lua filter
+```
+
+Make the script executable if needed:
+```bash
+chmod +x ~/.claude/skills/gdrive-upload/scripts/upload_to_drive.sh
 ```
 
 ## Usage
@@ -30,34 +44,34 @@ The script can be run from **any directory** — pass the source path as the fir
 
 ```bash
 # Upload current folder (the project you are working in)
-~/google_uploads/upload_to_drive.sh . gdrive:MyFolder/project_name
+~/.claude/skills/gdrive-upload/scripts/upload_to_drive.sh . gdrive:MyFolder/project_name
 
 # Upload a specific folder
-~/google_uploads/upload_to_drive.sh /path/to/folder gdrive:MyFolder/folder_name
+~/.claude/skills/gdrive-upload/scripts/upload_to_drive.sh /path/to/folder gdrive:MyFolder/folder_name
 
 # Upload using a relative path
-~/google_uploads/upload_to_drive.sh ../other_project gdrive:MyFolder/other_project
+~/.claude/skills/gdrive-upload/scripts/upload_to_drive.sh ../other_project gdrive:MyFolder/other_project
 ```
 
 **Practical examples:**
 ```bash
 # Upload ~/projects/docs/
-~/google_uploads/upload_to_drive.sh ~/projects/docs gdrive:AI_Projects/docs
+~/.claude/skills/gdrive-upload/scripts/upload_to_drive.sh ~/projects/docs gdrive:AI_Projects/docs
 
 # Upload the current working project
-~/google_uploads/upload_to_drive.sh "$PWD" gdrive:AI_Projects/$(basename "$PWD")
+~/.claude/skills/gdrive-upload/scripts/upload_to_drive.sh "$PWD" gdrive:AI_Projects/$(basename "$PWD")
 
 # Upload multiple folders in a loop
 for dir in ~/projects/ai/agents2 ~/projects/ai/ai_learning_book; do
-  ~/google_uploads/upload_to_drive.sh "$dir" "gdrive:AI_Projects/$(basename "$dir")"
+  ~/.claude/skills/gdrive-upload/scripts/upload_to_drive.sh "$dir" "gdrive:AI_Projects/$(basename "$dir")"
 done
 ```
 
 ## What the script does
 
 1. **Conversion**: each `.md` → `.docx` via `pandoc --from=gfm`
-   - Uses `~/google_uploads/pandoc_reference.docx` (automatically)
-   - Uses `~/google_uploads/no_bookmarks.lua` (automatically)
+   - Uses `~/.claude/skills/gdrive-upload/scripts/pandoc_reference.docx` (automatically)
+   - Uses `~/.claude/skills/gdrive-upload/scripts/no_bookmarks.lua` (automatically)
    - **Preserves folder structure**: `subdir/file.md` → `subdir/file` on Drive
 2. **Google Docs upload**: `rclone copy --drive-import-formats docx` → Google Drive converts `.docx` to Google Doc
 3. **Originals upload**: `.md` files go to `<gdrive_path>/md_originals/` with structure preserved
@@ -97,6 +111,6 @@ When the user asks to upload documents to Google Drive:
    - Folder name = `basename` of the source path
 3. Run the main script:
    ```bash
-   ~/google_uploads/upload_to_drive.sh <folder> gdrive:AI_Projects/<folder_name>
+   ~/.claude/skills/gdrive-upload/scripts/upload_to_drive.sh <folder> gdrive:AI_Projects/<folder_name>
    ```
 4. After success, report where the files are on Drive
