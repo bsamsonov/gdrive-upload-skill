@@ -21,7 +21,6 @@ applyTo: "**"
 ```
 /home/bvs/projects/ai/google_uploads/
 ├── upload_to_drive.sh      ← основной скрипт (pandoc + rclone, качественная конвертация)
-├── upload_investigation.sh ← упрощённый скрипт (только rclone, без pandoc)
 ├── pandoc_reference.docx   ← стиль документа (используется автоматически)
 └── no_bookmarks.lua        ← lua-фильтр pandoc (используется автоматически)
 ```
@@ -64,20 +63,6 @@ done
 2. **Загрузка Google Docs**: `rclone copy --drive-import-formats docx` → Google Drive конвертирует `.docx` в Google Doc
 3. **Загрузка оригиналов**: `.md` файлы в `<gdrive_путь>/md_originals/` с сохранением структуры
 4. **Cleanup**: временная папка удаляется только при успехе; при ошибке — сохраняется для ручного повтора
-
-## Упрощённый скрипт (без pandoc)
-
-`upload_investigation.sh` — более простой вариант, не требует pandoc, конвертирует MD напрямую через rclone:
-
-```bash
-# Загрузить папку в gdrive:Investigations/<имя_папки>
-/home/bvs/projects/ai/google_uploads/upload_investigation.sh /path/to/folder
-
-# Загрузить текущую папку
-/home/bvs/projects/ai/google_uploads/upload_investigation.sh .
-```
-
-Использовать когда: быстрая загрузка, pandoc не нужен, папка пойдёт в `gdrive:Investigations/`.
 
 ## Примечание про ASCII-диаграммы
 
