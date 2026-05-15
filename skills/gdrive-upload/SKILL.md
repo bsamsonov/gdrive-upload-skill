@@ -1,103 +1,102 @@
 ---
 description: |
-  Загружает папку с документами на Google Drive.
-  Конвертирует .md → Google Docs (через pandoc+rclone) и сохраняет оригиналы в md_originals/.
-  Использовать когда пользователь говорит "залей на гугл", "загрузи документы на Drive",
-  "upload to google drive", "залить на диск", "синхронизировать с гугл",
-  "загрузи текущий проект", "upload current folder", "загрузи папку".
+  Uploads a folder of documents to Google Drive.
+  Converts .md → Google Docs (via pandoc+rclone) and preserves originals in md_originals/.
+  Use when the user says "upload to google drive", "push docs to drive",
+  "sync with google", "upload current project", "upload current folder", "upload folder".
 applyTo: "**"
 ---
 
 # Skill: Upload Documents to Google Drive
 
-## Назначение
+## Purpose
 
-Загружает любую папку с `.md` файлами на Google Drive в двух форматах:
-1. **Google Docs** (с форматированием) — заголовки, таблицы, код — через `pandoc` → `.docx` → Google Drive conversion
-2. **Оригиналы `.md`** — в подпапку `md_originals/` для последующего просмотра
+Uploads any folder containing `.md` files to Google Drive in two formats:
+1. **Google Docs** (formatted) — headings, tables, code — via `pandoc` → `.docx` → Google Drive conversion
+2. **Original `.md` files** — stored in a `md_originals/` subfolder for reference
 
-## Расположение скриптов
+## Script location
 
 ```
 /home/bvs/projects/ai/google_uploads/
-├── upload_to_drive.sh      ← основной скрипт (pandoc + rclone, качественная конвертация)
-├── pandoc_reference.docx   ← стиль документа (используется автоматически)
-└── no_bookmarks.lua        ← lua-фильтр pandoc (используется автоматически)
+├── upload_to_drive.sh      ← main script (pandoc + rclone, high-quality conversion)
+├── pandoc_reference.docx   ← document style template (used automatically)
+└── no_bookmarks.lua        ← pandoc lua filter (used automatically)
 ```
 
-## Использование
+## Usage
 
-Скрипт можно запускать из **любой папки** — передай путь к нужной директории первым аргументом:
+The script can be run from **any directory** — pass the source path as the first argument:
 
 ```bash
-# Загрузить текущую папку (проект, в котором работаешь)
+# Upload current folder (the project you are working in)
 /home/bvs/projects/ai/google_uploads/upload_to_drive.sh . gdrive:MyFolder/project_name
 
-# Загрузить конкретную папку
+# Upload a specific folder
 /home/bvs/projects/ai/google_uploads/upload_to_drive.sh /path/to/folder gdrive:MyFolder/folder_name
 
-# Загрузить относительный путь
+# Upload using a relative path
 /home/bvs/projects/ai/google_uploads/upload_to_drive.sh ../other_project gdrive:MyFolder/other_project
 ```
 
-**Примеры с реальными путями:**
+**Practical examples:**
 ```bash
-# Загрузить папку ~/projects/docs/
+# Upload ~/projects/docs/
 /home/bvs/projects/ai/google_uploads/upload_to_drive.sh ~/projects/docs gdrive:AI_Projects/docs
 
-# Загрузить текущий рабочий проект
+# Upload the current working project
 /home/bvs/projects/ai/google_uploads/upload_to_drive.sh "$PWD" gdrive:AI_Projects/$(basename "$PWD")
 
-# Загрузить несколько папок в цикле
+# Upload multiple folders in a loop
 for dir in /home/bvs/projects/ai/agents2 /home/bvs/projects/ai/ai_learning_book; do
   /home/bvs/projects/ai/google_uploads/upload_to_drive.sh "$dir" "gdrive:AI_Projects/$(basename "$dir")"
 done
 ```
 
-## Что делает скрипт
+## What the script does
 
-1. **Конвертация**: каждый `.md` → `.docx` через `pandoc --from=gfm`
-   - Использует `/home/bvs/projects/ai/google_uploads/pandoc_reference.docx` (автоматически)
-   - Использует `/home/bvs/projects/ai/google_uploads/no_bookmarks.lua` (автоматически)
-   - **Сохраняет структуру папок**: `subdir/file.md` → `subdir/file` на Drive
-2. **Загрузка Google Docs**: `rclone copy --drive-import-formats docx` → Google Drive конвертирует `.docx` в Google Doc
-3. **Загрузка оригиналов**: `.md` файлы в `<gdrive_путь>/md_originals/` с сохранением структуры
-4. **Cleanup**: временная папка удаляется только при успехе; при ошибке — сохраняется для ручного повтора
+1. **Conversion**: each `.md` → `.docx` via `pandoc --from=gfm`
+   - Uses `/home/bvs/projects/ai/google_uploads/pandoc_reference.docx` (automatically)
+   - Uses `/home/bvs/projects/ai/google_uploads/no_bookmarks.lua` (automatically)
+   - **Preserves folder structure**: `subdir/file.md` → `subdir/file` on Drive
+2. **Google Docs upload**: `rclone copy --drive-import-formats docx` → Google Drive converts `.docx` to Google Doc
+3. **Originals upload**: `.md` files go to `<gdrive_path>/md_originals/` with structure preserved
+4. **Cleanup**: temp folder is deleted only on success; on error it is kept for manual retry
 
-## Примечание про ASCII-диаграммы
+## Note on ASCII diagrams
 
-Code blocks с ASCII-art (box-drawing символы ┌─┐│└┘) конвертируются в Courier New 9pt.
-Google Docs не поддерживает `wordWrap=off` из DOCX, поэтому при очень длинных строках
-(>90 символов) возможен перенос. Строки до 70 символов отображаются корректно.
+Code blocks with ASCII-art (box-drawing characters ┌─┐│└┘) are rendered in Courier New 9pt.
+Google Docs does not support `wordWrap=off` from DOCX, so very long lines (>90 chars) may wrap.
+Lines up to 70 characters display correctly.
 
-## Зависимости
+## Dependencies
 
-- `pandoc` — конвертация MD → DOCX: `sudo apt install pandoc`
-- `rclone` — загрузка на Google Drive (remote `gdrive:` уже настроен)
+- `pandoc` — MD → DOCX conversion: `sudo apt install pandoc`
+- `rclone` — upload to Google Drive (remote `gdrive:` must be configured)
 
-## Структура на Google Drive
+## Google Drive structure
 
 ```
-gdrive:<целевая_папка>/
+gdrive:<target_folder>/
 └── <project_folder>/
-    ├── file_name           ← Google Doc (отформатированный)
-    ├── subdir/file_name    ← Google Doc (структура папок сохраняется)
+    ├── file_name           ← Google Doc (formatted)
+    ├── subdir/file_name    ← Google Doc (folder structure preserved)
     └── md_originals/
         ├── file_name.md
         └── subdir/file_name.md
 ```
 
-## Инструкции для агента
+## Agent instructions
 
-Когда пользователь просит загрузить документы на Google Drive:
+When the user asks to upload documents to Google Drive:
 
-1. Определи КАКУЮ папку загружать:
-   - Если не указана — использовать текущую папку проекта (`$PWD` или папку из workspace)
-   - Если указана явно — использовать указанный путь
-2. Предложи gdrive-путь по умолчанию: `gdrive:AI_Projects/<имя_папки>`
-   - Имя папки = `basename` от пути источника
-3. Запусти основной скрипт:
+1. Determine WHICH folder to upload:
+   - If not specified — use the current project folder (`$PWD` or the workspace folder)
+   - If specified explicitly — use the given path
+2. Suggest a default gdrive path: `gdrive:AI_Projects/<folder_name>`
+   - Folder name = `basename` of the source path
+3. Run the main script:
    ```bash
-   /home/bvs/projects/ai/google_uploads/upload_to_drive.sh <папка> gdrive:AI_Projects/<имя_папки>
+   /home/bvs/projects/ai/google_uploads/upload_to_drive.sh <folder> gdrive:AI_Projects/<folder_name>
    ```
-4. После успеха сообщи где лежат файлы на Drive
+4. After success, report where the files are on Drive
