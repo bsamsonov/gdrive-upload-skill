@@ -20,7 +20,7 @@ Uploads any folder containing `.md` files to Google Drive in two formats:
 Clone directly into your user skills directory:
 
 ```bash
-git clone https://github.com/borissamsonov77/gdrive-upload-skill ~/.claude/skills/gdrive-upload
+git clone https://github.com/bsamsonov/gdrive-upload-skill ~/.claude/skills/gdrive-upload
 ```
 
 After cloning, the layout will be:
